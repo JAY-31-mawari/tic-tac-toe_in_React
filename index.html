@@ -180,9 +180,11 @@
 
                 return(
                     <div className="game">
-                        <div> Hello </div>
-                        <div className="game-board">
-                            <Board xnext={xnext} square={currentsquare} onplay={this.handleplay} />
+                        <div>
+                            <h1>Tic-Tac-Toe in React</h1>
+                            <div className="game-board">
+                                <Board xnext={xnext} square={currentsquare} onplay={this.handleplay} />
+                            </div>
                         </div>
                         <div className="game-info">
                             <ol>{moves}</ol>
