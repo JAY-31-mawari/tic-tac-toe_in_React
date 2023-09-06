@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .game {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* 100% viewport height */
+            flex-direction: row; /* Center content vertically */
+        }
+        .game-board {
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .status {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .board-row {
+            display: flex;
+        }
+
+        .game-board button {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            margin: 2px;
+            border: 1px solid #ccc;
+            background-color: #eee;
+            cursor: pointer;
+        }
+        .game-board button:hover {
+            background-color: #ddd;
+        }
+        .game-info li {
+            margin:1px;
+        }   
+        .game-board button{
+            width:30px;
+            height:30px;
+            vertical-align: top;
+            margin:0.2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="text/babel">
+
+        class Square extends React.Component{
+
+            constructor(props){
+                super(props);
+                this.state={
+                    value:null,
+                }
+            }
+
+            render(){
+                return(
+                    <button onClick={this.props.onClick}>{this.props.value}</button>
+                )
+            }
+
+            
+        }
+
+        class Board extends React.Component{
+
+            render(){
+                const winner=this.calculatewinner(this.props.square);
+                let status;
+                if(winner)
+                {
+                    status = "Winner : " + winner;
+                }
+                else{
+                    status = "Next Player : " + (this.props.xnext ? "X" : "O")
+                }
+                
+                return(
+                    <div>
+                        <div className="status">{status}</div>
+                        <div className="board-row">
+                            <Square value={this.props.square[0]} onClick={()=>this.handlechange(0)}/>
+                            <Square value={this.props.square[1]} onClick={()=>this.handlechange(1)}/>
+                            <Square value={this.props.square[2]} onClick={()=>this.handlechange(2)}/>
+                        </div>
+                        <div className="board-row">
+                            <Square value={this.props.square[3]} onClick={()=>this.handlechange(3)}/>
+                            <Square value={this.props.square[4]} onClick={()=>this.handlechange(4)}/>
+                            <Square value={this.props.square[5]} onClick={()=>this.handlechange(5)}/>
+                        </div>
+                        <div className="board-row">
+                            <Square value={this.props.square[6]} onClick={()=>this.handlechange(6)}/>
+                            <Square value={this.props.square[7]} onClick={()=>this.handlechange(7)}/>
+                            <Square value={this.props.square[8]} onClick={()=>this.handlechange(8)}/>
+                        </div>
+                    </div>
+                )
+            }
+
+            handlechange = (index) =>{
+                if(this.calculatewinner(this.props.square) || this.props.square[index])
+                {
+                    return;
+                }
+                const nextsquare=this.props.square.slice();
+                if (this.props.xnext){
+                    nextsquare[index]="X"
+                }
+                else{
+                    nextsquare[index]="O"
+                }
+                this.props.onplay(nextsquare);
+            }
+
+            calculatewinner = (square) =>{
+                const lines=[
+                    [0,1,2],
+                    [3,4,5],
+                    [6,7,8],
+                    [0,3,6],
+                    [1,4,7],
+                    [2,5,8],
+                    [0,4,8],
+                    [2,4,6]
+                ];
+                for (let i = 0; i < lines.length; i++) {
+                    const[a,b,c]=lines[i];
+                    if(square[a] && square[a]===square[b] && square[a]===square[c])
+                    {
+                        return square[a];
+                    }   
+                }
+                return null;
+            }
+
+        }
+
+        class Game extends React.Component{
+
+            constructor(props){
+                super(props);
+                this.state={
+                    history:[Array(9).fill(null)],
+                    currentmove:0
+                }
+            }
+
+            
+
+            render(){
+                const xnext=(this.state.currentmove%2===0);
+                const currentsquare=this.state.history[this.state.currentmove];
+                const moves=this.state.history.map((history,move)=>{
+                    let description;
+                    if(move > 0){
+                        description = "Go to move #"+move;
+                    }
+                    else{
+                        description = "Go to game start";
+                    }
+                    return (
+                        <li key={move}><button onClick={()=>this.jumpto(move)}>{description}</button></li>
+                    )
+                })
+
+                return(
+                    <div className="game">
+                        <div className="game-board">
+                            <Board xnext={xnext} square={currentsquare} onplay={this.handleplay} />
+                        </div>
+                        <div className="game-info">
+                            <ol>{moves}</ol>
+                        </div>
+                    </div>
+                )
+            }
+
+
+            jumpto = (move) =>{
+                this.setState(state=>({
+                    currentmove:move,
+                }))
+            }
+            
+            handleplay = (nextsquare) =>{
+                const newhistory=[...this.state.history.slice(0,this.state.currentmove+1),nextsquare]
+                this.setState(state=>({
+                    history : newhistory,
+                    currentmove : newhistory.length-1
+                }))
+            }
+        }
+
+        ReactDOM.render(<Game />,document.querySelector("#app"))
+    </script>
+</body>
+</html>
